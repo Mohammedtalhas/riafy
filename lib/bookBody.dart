@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -9,60 +8,39 @@ import 'package:riafy/services/service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:riafy/services/constants.dart';
-import 'package:flutter/services.dart';
-
-import 'comments.dart';
-class InstaList extends StatefulWidget {
+class bookBody extends StatefulWidget {
   @override
-  _InstaListState createState() => _InstaListState();
+  _bookBodyState createState() => _bookBodyState();
 }
 
-class _InstaListState extends State<InstaList> {
+class _bookBodyState extends State<bookBody> {
   bool isPressed = false;
   bool isLoading = true;
-  List<dynamic> Contentlist;
-  List<dynamic> Comments;
+  List<Product> Contentlist;
   bool flag = true;
   DatabaseHelper db = new DatabaseHelper();
   void initState() {
     super.initState();
-    print("hello");
     //_loadVideos();
     _loadVideos();
-    _makePostRequest();
-  }
-  _makePostRequest() async {
-
-    // set up POST request arguments
-    String url = Constants.Comments;
-    // make POST request
-    Response response = await http.get(Uri.parse(url));
-    // check the status code for the result
-    int statusCode = response.statusCode;
-    Comments = json.decode(response.body) as List;
-
-
-    print(Comments);
-    //print(body[0]["id"]);
   }
   _loadVideos() async {
-    String loaded = await Services.getblogs(
-    );
+   Contentlist = await db.getAllProducts();
 
-    Contentlist = json.decode(loaded) as List;
     setState(() {
       isLoading= false;
     });
 
   }
   _bookmark( product,context) async {
-    int loaded = await db.insert(product);
+    int loaded = await db.delete(product.id);
     if(loaded>0){
       new Future<Null>.delayed(Duration.zero, () {
         Scaffold.of(context).showSnackBar(
-          new SnackBar(content: new Text("Bookmark Saved.")),
+          new SnackBar(content: new Text("Bookmark Deleted.")),
         );
       });
+      _loadVideos();
     }
 
 
@@ -120,13 +98,14 @@ class _InstaListState extends State<InstaList> {
         ],
       ),
     ):ListView.builder(
-      itemCount: Contentlist.length,
-      itemBuilder: (context, index){
-        return _buildArticleItem(context,index);
-      }
+        itemCount: Contentlist.length,
+        itemBuilder: (context, index){
+          return _buildArticleItem(context,index);
+        }
     );
   }
   Widget _buildArticleItem(context,int index) {
+    print(Contentlist[index].lowthumbnail);
     return  Column(
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -146,14 +125,14 @@ class _InstaListState extends State<InstaList> {
                       shape: BoxShape.circle,
                       image: new DecorationImage(
                           fit: BoxFit.fill,
-                          image: new NetworkImage(Contentlist[index]["low thumbnail"])),
+                          image: new NetworkImage(Contentlist[index].lowthumbnail==null?"https://i.picsum.photos/id/218/200/300.jpg?blur=5&hmac=X1RODYjrRYRzlBkVQ34yhust0bupBXD6yes186cTKY0":Contentlist[index].lowthumbnail)),
                     ),
                   ),
                   new SizedBox(
                     width: 10.0,
                   ),
                   new Text(
-                    Contentlist[index]["channelname"],
+                    Contentlist[index].channelinfo,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
@@ -167,7 +146,7 @@ class _InstaListState extends State<InstaList> {
         ),
         Flexible(
           fit: FlexFit.loose,
-          child: new Image.network(Contentlist[index]["high thumbnail"],
+          child: new Image.network(Contentlist[index].highthumbnail==null?"https://i.picsum.photos/id/218/200/300.jpg?blur=5&hmac=X1RODYjrRYRzlBkVQ34yhust0bupBXD6yes186cTKY0":Contentlist[index].highthumbnail,
             fit: BoxFit.cover,
           ),
         ),
@@ -193,15 +172,9 @@ class _InstaListState extends State<InstaList> {
                   new SizedBox(
                     width: 16.0,
                   ),
-                  IconButton(
-                    icon:  new Icon(
+                  new Icon(
                     FontAwesomeIcons.comment,
                   ),
-                    onPressed: (){
-                      Navigator.of(context).push(_createRoute(Comments));
-                    },
-                ),
-
                   new SizedBox(
                     width: 16.0,
                   ),
@@ -209,7 +182,7 @@ class _InstaListState extends State<InstaList> {
                 ],
               ),
               IconButton(
-                icon: new Icon(FontAwesomeIcons.bookmark),
+                icon: new Icon(Icons.delete),
                 onPressed: () {
                   _bookmark(Contentlist[index],context);
 
@@ -235,35 +208,40 @@ class _InstaListState extends State<InstaList> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: new  RichText(
-            textAlign: TextAlign.left,
-            text: TextSpan(children: [
-                  TextSpan(
-                      text: "${Contentlist[index]['channelname']}\t",
-                      style: TextStyle(
-                          color: Colors.black,fontFamily: 'Montserrat',fontWeight: FontWeight.bold)),
-                    TextSpan(
-                    text: flag ?  (Contentlist[index]["title"].length<50?Contentlist[index]["title"]:Contentlist[index]["title"].substring(0, 50)) : Contentlist[index]["title"],
-                    style: TextStyle(
-                    color: Colors.black,fontFamily: 'Montserrat',
-                    fontSize: 13)),
-                     TextSpan(
-                      text: flag? "more" : " less",
-                      style: new TextStyle(color: Colors.blue),
-                      recognizer: new TapGestureRecognizer()
-                        ..onTap = () {
+          child: Row(
+            children: [ Text("${Contentlist[index].channelinfo}\t",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+              Expanded(
+                child:
+
+                Container(
+                  padding: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                  child: Contentlist[index].title.length<50?new Text( Contentlist[index].title,)
+                      : new Column(
+                    children: <Widget>[
+                      new Text(flag ? ( Contentlist[index].title.substring(0, 50)) : (Contentlist[index].title)),
+                      new InkWell(
+                        child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            new Text(flag? "show more" : "show less",
+                              style: new TextStyle(color: Colors.blue),
+                            ),
+                          ],
+                        ),
+                        onTap: () {
                           setState(() {
                             flag = !flag;
-                            });
-
+                          });
                         },
-                    ),
-
-
-                ]),
-
-
-
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         Padding(
@@ -278,7 +256,7 @@ class _InstaListState extends State<InstaList> {
                   shape: BoxShape.circle,
                   image: new DecorationImage(
                       fit: BoxFit.fill,
-                      image: new NetworkImage(Contentlist[index]["low thumbnail"])),
+                      image: new NetworkImage(Contentlist[index].lowthumbnail==null?"https://i.picsum.photos/id/218/200/300.jpg?blur=5&hmac=X1RODYjrRYRzlBkVQ34yhust0bupBXD6yes186cTKY0":Contentlist[index].lowthumbnail)),
                 ),
               ),
               new SizedBox(
@@ -304,24 +282,4 @@ class _InstaListState extends State<InstaList> {
     );
   }
 
-}
-Route _createRoute(List value) {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => Comments(value),
-    transitionDuration: Duration(milliseconds: 700),
-    reverseTransitionDuration: Duration(milliseconds: 700),
-
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      var begin = Offset(0.0, 1.0);
-      var end = Offset.zero;
-      var curve = Curves.ease;
-
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
-    },
-  );
 }

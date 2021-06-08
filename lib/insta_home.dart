@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:riafy/insta_body.dart';
+
+import 'bookBody.dart';
 class InstaHome extends StatefulWidget {
   @override
   _InstaHomeState createState() => _InstaHomeState();
@@ -21,21 +24,42 @@ class _InstaHomeState extends State<InstaHome> {
     actions: <Widget>[
       Padding(
         padding: const EdgeInsets.only(right: 12.0),
-        child: Icon(Icons.send),
+        child: Icon(FontAwesomeIcons.telegramPlane),
       )
     ],
   );
 
+  final List<Widget> _children = [
+    InstaBody(),bookBody(),
+
+  ];
+  int currentIndex = 0;
+
+  changePage(int index) {
+
+
+    setState(() {
+
+
+      currentIndex = index;
+
+
+    });
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: topBar,
-        body: new InstaBody(),
+        body: _children[currentIndex],
         bottomNavigationBar: new Container(
           color: Colors.white,
           height: 50.0,
           alignment: Alignment.center,
           child: new BottomAppBar(
+
+
             child: new Row(
               // alignment: MainAxisAlignment.spaceAround,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -44,7 +68,10 @@ class _InstaHomeState extends State<InstaHome> {
                   icon: Icon(
                     Icons.home,
                   ),
-                  onPressed: () {},
+                  color: currentIndex==0?Colors.black:Colors.grey,
+                  onPressed: () {
+                    changePage(0);
+                  },
                 ),
                 new IconButton(
                   icon: Icon(
@@ -66,9 +93,12 @@ class _InstaHomeState extends State<InstaHome> {
                 ),
                 new IconButton(
                   icon: Icon(
-                    Icons.account_box,
+                    FontAwesomeIcons.bookmark,
                   ),
-                  onPressed: null,
+                  color: currentIndex==1?Colors.black:Colors.grey,
+                  onPressed: (){
+                    changePage(1);
+                  },
                 ),
               ],
             ),
