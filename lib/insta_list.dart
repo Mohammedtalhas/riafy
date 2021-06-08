@@ -248,7 +248,7 @@ class _InstaListState extends State<InstaList> {
                     color: Colors.black,fontFamily: 'Montserrat',
                     fontSize: 13)),
                      TextSpan(
-                      text: flag? "more" : " less",
+                      text: Contentlist[index]["title"].length>50?(flag? "more" : " less"):"",
                       style: new TextStyle(color: Colors.blue),
                       recognizer: new TapGestureRecognizer()
                         ..onTap = () {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -97,15 +98,22 @@ class _bookBodyState extends State<bookBody> {
           ),
         ],
       ),
+    ):(Contentlist.length==0?Container(
+      padding: EdgeInsets.all(20),
+      child: Center(
+        child: Text(
+          "No Bookmarks Saved",
+          textAlign: TextAlign.center,
+        ),
+      ),
     ):ListView.builder(
         itemCount: Contentlist.length,
         itemBuilder: (context, index){
           return _buildArticleItem(context,index);
         }
-    );
+    ));
   }
   Widget _buildArticleItem(context,int index) {
-    print(Contentlist[index].lowthumbnail);
     return  Column(
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -208,40 +216,35 @@ class _bookBodyState extends State<bookBody> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [ Text("${Contentlist[index].channelinfo}\t",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+          child:new  RichText(
+            textAlign: TextAlign.left,
+            text: TextSpan(children: [
+              TextSpan(
+                  text: "${Contentlist[index].channelinfo}\t",
+                  style: TextStyle(
+                      color: Colors.black,fontFamily: 'Montserrat',fontWeight: FontWeight.bold)),
+              TextSpan(
+                  text: flag ?  (Contentlist[index].title.length<50?Contentlist[index].title:Contentlist[index].title.substring(0, 50)) : Contentlist[index].title,
+                  style: TextStyle(
+                      color: Colors.black,fontFamily: 'Montserrat',
+                      fontSize: 13)),
+              TextSpan(
+                text: Contentlist[index].title.length>50?(flag? "more" : " less"):"",
+                style: new TextStyle(color: Colors.blue),
+                recognizer: new TapGestureRecognizer()
+                  ..onTap = () {
+                    setState(() {
+                      flag = !flag;
+                    });
 
-              Expanded(
-                child:
-
-                Container(
-                  padding: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-                  child: Contentlist[index].title.length<50?new Text( Contentlist[index].title,)
-                      : new Column(
-                    children: <Widget>[
-                      new Text(flag ? ( Contentlist[index].title.substring(0, 50)) : (Contentlist[index].title)),
-                      new InkWell(
-                        child: new Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            new Text(flag? "show more" : "show less",
-                              style: new TextStyle(color: Colors.blue),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          setState(() {
-                            flag = !flag;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+                  },
               ),
-            ],
+
+
+            ]),
+
+
+
           ),
         ),
         Padding(
